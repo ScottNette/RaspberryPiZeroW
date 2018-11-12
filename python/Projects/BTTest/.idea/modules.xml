@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/BTTest.iml" filepath="$PROJECT_DIR$/.idea/BTTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../DoorUnlocker/.idea/DoorUnlocker.iml" filepath="$PROJECT_DIR$/../DoorUnlocker/.idea/DoorUnlocker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../EmailTest/.idea/EmailTest.iml" filepath="$PROJECT_DIR$/../EmailTest/.idea/EmailTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../GPIOTest/.idea/GPIOTest.iml" filepath="$PROJECT_DIR$/../GPIOTest/.idea/GPIOTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../SMSTest/.idea/SMSTest.iml" filepath="$PROJECT_DIR$/../SMSTest/.idea/SMSTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../pushTest/.idea/pushTest.iml" filepath="$PROJECT_DIR$/../pushTest/.idea/pushTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../wifiLogging/.idea/wifiLogging.iml" filepath="$PROJECT_DIR$/../wifiLogging/.idea/wifiLogging.iml" />
+    </modules>
+  </component>
+</project>
