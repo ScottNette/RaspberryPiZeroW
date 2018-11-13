@@ -20,15 +20,15 @@ def checkAllow():
     global AllowList, RSSIThreshold
 
     for device in AllowList:
-        deviceName, deviceAddr = device
+        deviceName, deviceAddr, deviceEmail = device
         rssi_val = getRSSI(deviceAddr)
         if RSSIThreshold[0] < rssi_val < RSSIThreshold[1]:
-            deviceOut = device
+            deviceOut = deviceName
             break
         else:
-            deviceOut = (None, None)
+            deviceOut = None
 
-    return deviceOut
+    return deviceOut, deviceEmail
 
 
 

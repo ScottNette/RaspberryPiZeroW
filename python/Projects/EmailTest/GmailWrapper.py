@@ -2,7 +2,9 @@
 
 from imapclient import IMAPClient, SEEN
 import smtplib
-
+import email
+import imaplib
+from datetime import datetime
 
 from googleapiclient.discovery import build
 from apiclient import errors
@@ -14,92 +16,102 @@ UNSEEN_FLAG = 'UNSEEN'
 
 
 class GmailWrapper:
-    def __init__(self, host, userName, password):
+    def __init__(self, host, userName, password,allowlist):
         #   force the user to pass along username and password to log in as
         self.host = host
         self.userName = userName
         self.password = password
         self.login()
         self.message = []
+        self.rxSender = None
+        self.rxSubject = None
+        self.rxDate = None
+        self.AllowList = allowlist
 
     def login(self):
         print('Logging in as ' + self.userName)
-        server = IMAPClient(self.host, use_uid=True, ssl=True)
-        server.login(self.userName, self.password)
-        self.server = server
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        # imaplib module implements connection based on IMAPv4 protocol
+        try:
+            mail.login(self.userName, self.password)
 
-    #   The IMAPClient search returns a list of Id's that match the given criteria.
-    #   An Id in this case identifies a specific email
-    def getIdsBySubject(self, subject, unreadOnly=True, folder='INBOX'):
-        #   search within the specified folder, e.g. Inbox
-        self.server.select_folder(folder, readonly=True)
-
-        #   build the search criteria (e.g. unread emails with the given subject)
-        self.searchCriteria = ['SUBJECT', subject, UNSEEN_FLAG]
-
-
-        if (unreadOnly == False):
-            #   force the search to include "read" emails too
-            self.searchCriteria.append(SEEN_FLAG)
-
-        self.messages = self.server.search('UNSEEN')
-        #   conduct the search and return the resulting Ids
-        return self.messages
+            mail.list()  # Lists all labels in GMail
+            mail.select('inbox')  # Connected to inbox.
+            self.server = mail
+            return True
+        except:
+            raise Exception('Error Logging In')
+            return False
 
 
 
-    def markAsRead(self, mailIds, folder='INBOX'):
-        self.setFolder(folder)
-        self.server.set_flags(mailIds, [SEEN])
 
-    def setFolder(self, folder):
-        self.server.select_folder(folder)
 
-    def sendTxt(text):
+    def checkFrom(self):
 
+
+        # continue inside the same for loop as above
+        raw_email_string = self.raw_email.decode('utf-8')
+        # converts byte literal to string removing b''
+        email_message = email.message_from_string(raw_email_string)
+
+        self.rxSender = email_message.get('From')
+        self.rxSubject = email_message.get('Subject')
+        self.rxDate = email_message.get('Date')
+
+        for device, address, fromEmail in self.AllowList:
+            if (self.rxSender == fromEmail):
+                return True
+                break
+            else:
+                return False
+
+    def checkTime(self):
+        try:
+            self.rxDate = self.rxDate.strip(' +0000')
+            datetimeEmail = datetime.strptime(self.rxDate, '%d %b %Y %H:%M:%S')
+            datetimeNow = datetime.utcnow()
+            difftime = datetimeNow - datetimeEmail
+        except:
+            return False
+            raise Exception('Could not parse datetime')
+
+
+        if (difftime.total_seconds() < 60):
+            return True
+        else:
+            return False
+
+
+
+    def checkExist(self, subject):
+        # result, data = self.server.uid('search', 'UNREAD', "ALL")
+        result, data = self.server.search(None, '(UNSEEN)', '(SUBJECT "Unlock")')
+        # search and return uids instead
+        i = len(data[0].split())  # data[0] is a space separate string
+        for x in range(i):
+            latest_email_uid = data[0].split()[x]  # unique ids wrt label selected
+            result, email_data = self.server.uid('fetch', latest_email_uid, '(RFC822)')
+            # fetch the email body (RFC822) for the given ID
+            raw_email = email_data[0][1]
+            # print(raw_email)
+
+
+        #eeror here
+        try:
+            self.raw_email = raw_email
+        except:
+            return False
+            raise Exception('no email')
+        finally:
+            return False
+
+
+
+    def sendTxt(self,targets, text):
         username = 'sdroid.scott'
         password = 'ComP353uter~!'
         sender = 'sdroid.scott@gmail.com'
-        targets = '2038038060@vtext.com'
-
-        #msg = MIMEMultipart()
-        msg = MIMEText(text)
-        msg['Subject'] = 'Unlocker'
-        msg['From'] = sender
-        msg['To'] = targets
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.ehlo()
-        server.starttls()
-        #server = smtplib.SMTP_SSL('smtp.gmail.com', 587)
-        server.login(username, password)
-        #server.sendmail(sender, targets, msg.as_string())
-        server.send_message(msg)
-        server.quit()
-        print(msg)
-
-    def sendTxt2(text):
-        username = 'sdroid.scott'
-        password = 'ComP353uter~!'
-        sender = 'sdroid.scott@gmail.com'
-        targets = '2038038060@vtext.com'
-
-        # SMTP_SSL Example
-        server_ssl = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-        server_ssl.ehlo()  # optional, called by login()
-        server_ssl.login(username, password)
-        # ssl server doesn't support or need tls, so don't call server_ssl.starttls()
-        server_ssl.sendmail(sender, targets, text)
-        # server_ssl.quit()
-        server_ssl.close()
-        print
-        'successfully sent the mail'
-
-    def sendTxt3(text):
-        username = 'sdroid.scott'
-        password = 'ComP353uter~!'
-        sender = 'sdroid.scott@gmail.com'
-        targets = '2038038060@vtext.com'
 
         FROM = sender
         TO = targets if isinstance(targets, list) else [targets]
@@ -110,7 +122,7 @@ class GmailWrapper:
         message = """From: %s\nTo: %s\nSubject: %s\n\n%s
             """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
 
-        print(message)
+        #print(message)
         try:
             server = smtplib.SMTP("smtp.gmail.com", 587)
             server.ehlo()
@@ -123,7 +135,7 @@ class GmailWrapper:
             print('failed to send mail')
 
 
-    def create_message( sender, to, subject, message_text):
+    def create_message(self, sender, to, subject, message_text):
         """Create a message for an email.
         Args:
           sender: Email address of the sender.
@@ -139,7 +151,7 @@ class GmailWrapper:
         message['subject'] = subject
         return {'raw': str(message)}
 
-    def send_message(service, user_id, message):
+    def send_message(self,service, user_id, message):
         """Send an email message.
         Args:
           service: Authorized Gmail API service instance.
@@ -152,12 +164,12 @@ class GmailWrapper:
         try:
             message = (service.users().messages().send(userId=user_id, body=message)
                        .execute())
-            print('Message Id: %s' % message['id'])
+            #print('Message Id: %s' % message['id'])
             return message
         except errors.HttpError as error:
             print('An error occurred: %s' % error)
 
-    def service_account_login():
+    def service_account_login(self):
         SCOPES = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/gmail.metadata']
         SERVICE_ACCOUNT_FILE = 'client_secret.json'
 
