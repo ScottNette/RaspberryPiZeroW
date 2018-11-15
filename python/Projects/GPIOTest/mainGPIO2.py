@@ -20,13 +20,14 @@ wiringpi.pwmSetRange(2000)
 delay_period = 0.01
 
 while True:
-    for pulse in range(50, 250, 1):
-        wiringpi.pwmWrite(18, pulse)
-        time.sleep(delay_period)
-    time.sleep(2)
-    for pulse in range(250, 50, -1):
-        wiringpi.pwmWrite(18, pulse)
-        time.sleep(delay_period)
-    time.sleep(2)
+    #for pulse in range(50, 250, 1):
+    #    wiringpi.pwmWrite(18, pulse)
+    #    time.sleep(delay_period)
+    #time.sleep(2)
+    #for pulse in range(250, 50, -1):
+    #    wiringpi.pwmWrite(18, pulse)
+    #    time.sleep(delay_period)
+    #time.sleep(2)
 
-    print(wiringpi.digitalRead(17) )
+    print(wiringpi.digitalRead(17))
+    time.sleep(0.2)

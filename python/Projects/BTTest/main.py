@@ -9,7 +9,7 @@ RSSIThreshold = (-30, 10)
 
 
 def main():
-
+    discoverDevice()
     print ('here')
 
 
@@ -39,7 +39,7 @@ def getRSSI(Target_MAC):
 
 def discoverDevice():
 
-    nearby_devices = bluetooth.discover_devices(duration=1, lookup_names=1, flush_cache=1)
+    nearby_devices = bluetooth.discover_devices(duration=10, lookup_names=1, flush_cache=1)
     print("found %d devices" % len(nearby_devices))
 
     for addr, name in nearby_devices:

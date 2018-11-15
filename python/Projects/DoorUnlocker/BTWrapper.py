@@ -20,7 +20,7 @@ class BTWrapper:
                 self.foundDevice.append(device)
                 break
             else:
-                self.foundDevice = (None, None, None)
+                self.foundDevice = []
 
 
 

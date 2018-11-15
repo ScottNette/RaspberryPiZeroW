@@ -5,5 +5,9 @@
     <orderEntry type="jdk" jdkName="Python 2.7 (Interp)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="EmailTest" />
+    <orderEntry type="module" module-name="wifiLogging" />
+    <orderEntry type="module" module-name="SMSTest" />
+    <orderEntry type="module" module-name="GPIOTest" />
+    <orderEntry type="module" module-name="BTTest" />
   </component>
 </module>

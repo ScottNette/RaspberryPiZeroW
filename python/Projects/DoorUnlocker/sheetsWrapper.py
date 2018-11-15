@@ -21,14 +21,14 @@ class sheetsWrapper:
         self.row = int(rowIdx) + 1
         self.sheet.update_acell('G2', self.row)
 
-    def updateLog(self):
+    def updateLog(self, State, Device):
         self.updateIndex()
         range_build = 'A' + str(self.row) + ':D' + str(self.row)
         cell_list = self.sheet.range(range_build)
 
         dateNow = str(datetime.date.today())
         timeNow = str(datetime.datetime.time(datetime.datetime.now()).replace(microsecond=0))
-        cell_values = [dateNow, timeNow, 'open', 'Pixel']
+        cell_values = [dateNow, timeNow, State, Device]
         print(cell_values)
 
         for i, val in enumerate(cell_values):  # gives us a tuple of an index and value

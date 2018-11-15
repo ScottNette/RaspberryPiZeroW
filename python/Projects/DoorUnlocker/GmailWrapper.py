@@ -55,39 +55,65 @@ class GmailWrapper:
         # converts byte literal to string removing b''
         email_message = email.message_from_string(raw_email_string)
 
+        #print(email_message)
         self.rxSender = email_message.get('From')
         self.rxSubject = email_message.get('Subject')
         self.rxDate = email_message.get('Date')
 
+
         for device, address, fromEmail in self.AllowList:
+            print(fromEmail)
+            print(self.rxSender)
             if (self.rxSender == fromEmail):
                 return True
-                break
-            else:
-                return False
+
+        return False
 
     def checkTime(self):
         try:
             self.rxDate = self.rxDate.strip(' +0000')
+            print(self.rxDate)
             datetimeEmail = datetime.strptime(self.rxDate, '%d %b %Y %H:%M:%S')
             datetimeNow = datetime.utcnow()
             difftime = datetimeNow - datetimeEmail
+            print(difftime)
+            if (difftime.total_seconds() < 60):
+                return True
+            else:
+                return False
+
         except:
-            return False
-            raise Exception('Could not parse datetime')
-
-
-        if (difftime.total_seconds() < 60):
-            return True
-        else:
-            return False
+            pass
 
 
 
-    def checkExist(self):
+        try:
+            self.rxDate = self.rxDate.strip(' GMT')
+            print(self.rxDate)
+            datetimeEmail = datetime.strptime(self.rxDate, '%a, %d %b %Y %H:%M:%S')
+            datetimeNow = datetime.utcnow()
+            difftime = datetimeNow - datetimeEmail
+            print(difftime)
+            if (difftime.total_seconds() < 60):
+                return True
+            else:
+                return False
+
+        except:
+            pass
+
+
+
+
+        return False
+
+
+
+    def checkExist(self, subject):
         # result, data = self.server.uid('search', 'UNREAD', "ALL")
-        result, data = self.server.search(None, '(UNSEEN)', '(SUBJECT "Unlock")')
-        print(result)
+        #result, data = self.server.search(None, '(UNSEEN)', '(SUBJECT ' + subject + ')')
+        result, data = self.server.search(None, '(UNSEEN)', '(TEXT ' + subject + ')')
+        #print(data)
         raw_email = []
         # search and return uids instead
         i = len(data[0].split())  # data[0] is a space separate string
