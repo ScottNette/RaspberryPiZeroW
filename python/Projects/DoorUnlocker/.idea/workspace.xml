@@ -1,23 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cf5dc8e8-898b-419a-af94-c1c1a135d3e7" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/../BTTest/.idea/BTTest.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../BTTest/.idea/BTTest.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../BTTest/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../BTTest/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/DoorUnlocker.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DoorUnlocker.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+    <list default="true" id="cf5dc8e8-898b-419a-af94-c1c1a135d3e7" name="Default" comment="Working with Tmobile and Verizon.&#10;&#10;Added scheduler, not tested">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BTWrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/BTWrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GmailWrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/GmailWrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MasterCntrlWrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/MasterCntrlWrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gpioWrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/gpioWrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mainDoorUnlocker.py" beforeDir="false" afterPath="$PROJECT_DIR$/mainDoorUnlocker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sheetsWrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/sheetsWrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GPIOTest/.idea/GPIOTest.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../GPIOTest/.idea/GPIOTest.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../GPIOTest/mainGPIO2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../GPIOTest/mainGPIO2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../SMSTest/.idea/SMSTest.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../SMSTest/.idea/SMSTest.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../wifiLogging/.idea/wifiLogging.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../wifiLogging/.idea/wifiLogging.iml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -39,10 +24,12 @@
         <counts>
           <entry key="Python Console" value="316" />
           <entry key="py" value="2386" />
+          <entry key="txt" value="62" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
+          <entry key="PLAIN_TEXT" value="62" />
           <entry key="Python" value="2636" />
           <entry key="Scratch" value="66" />
         </counts>
@@ -274,7 +261,7 @@
   <component name="PropertiesComponent">
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../BTTest" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="settings.github" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -303,7 +290,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.scratch_1">
+  <component name="RunManager" selected="Python.mainDoorUnlocker">
     <configuration name="mainDoorUnlocker" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="DoorUnlocker" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -381,7 +368,7 @@
     </recent_temporary>
   </component>
   <component name="SvnConfiguration">
-    <configuration />
+    <configuration>C:\Users\mosta\AppData\Roaming\Subversion</configuration>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -391,6 +378,14 @@
       <option name="presentableId" value="Default" />
       <updated>1542011994437</updated>
     </task>
+    <task id="LOCAL-00001" summary="Working with Tmobile and Verizon.&#10;&#10;Added scheduler, not tested">
+      <created>1542256744926</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1542256744926</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -418,6 +413,10 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Working with Tmobile and Verizon.&#10;&#10;Added scheduler, not tested" />
+    <option name="LAST_COMMIT_MESSAGE" value="Working with Tmobile and Verizon.&#10;&#10;Added scheduler, not tested" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
