@@ -8,14 +8,24 @@ AllowedTimes = [16, 21]
 
 def main():
 
-    #init
+    print('Starting')
+    time.sleep(10)
+
+    while True:
+
+        print('Open Lock')
+        MstrCntrl.gpioCntrl.openLock()
+
+        time.sleep(5)
+        print('Close Lock')
+        MstrCntrl.gpioCntrl.closeLock()
+        time.sleep(5)
 
 
 
 
 
-
-    while scheduleCheck():
+    while False: #scheduleCheck():
         if (MstrCntrl.MasterSTATE == 'IDLE'):
             idleState()
         if (MstrCntrl.MasterSTATE == 'VERIFY'):
@@ -47,10 +57,6 @@ def idleState():
         Cond_3 = MstrCntrl.gmailCntrl.checkTime()
         if (Cond_2 and Cond_3):
             MstrCntrl.MasterSTATE = 'UNLOCK'
-
-
-
-
 
 
 

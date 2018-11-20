@@ -21,10 +21,10 @@ class MasterCntrlWrapper:
                           ('Kristen', '4C:74:BF:B0:1E:B4', '+16233268643@tmomail.net')]
         self.RSSIThreshold = (-30, 10)
 
-        self.BTCntrl = BTWrapper(self.AllowList, self.RSSIThreshold)
+        #self.BTCntrl = BTWrapper(self.AllowList, self.RSSIThreshold)
 
         ## Gmail init
-        self.gmailCntrl = GmailWrapper('imap.gmail.com', 'sdroid.scott', 'ComP353uter~!', self.AllowList)
+        #self.gmailCntrl = GmailWrapper('imap.gmail.com', 'sdroid.scott', 'ComP353uter~!', self.AllowList)
 
         self.gpioCntrl = gpioWrapper()
 
