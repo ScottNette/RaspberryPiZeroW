@@ -1,29 +1,7 @@
 from gpiozero import Servo
-import wiringpi
+import RPi.GPIO as GPIO
 import time
 
-
-wiringpi.wiringPiSetupGpio()
-
-
-
-
-wiringpi.pinMode(17, wiringpi.GPIO.INPUT)
-wiringpi.pinMode(4, wiringpi.GPIO.INPUT)
-wiringpi.pinMode(3, wiringpi.GPIO.OUTPUT)
-wiringpi.pullUpDnControl(3,wiringpi.PUD_DOWN)
-wiringpi.pullUpDnControl(4,wiringpi.PUD_DOWN)
-wiringpi.pullUpDnControl(17,wiringpi.PUD_DOWN)
-
-# set #18 to be a PWM output
-wiringpi.pinMode(18, wiringpi.GPIO.PWM_OUTPUT)
-
-# set the PWM mode to milliseconds stype
-wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
-
-# divide down clock
-wiringpi.pwmSetClock(192)
-wiringpi.pwmSetRange(2000)
 
 
 
@@ -36,15 +14,29 @@ class gpioWrapper:
         self.openDoor = 0
         self.closeDoor = 1
 
+        self.pwmLockCmd = 9
+        self.pwmUnlockCmd = 4
+
         self.gpioRelay = 3
         self.gpioServoPWM = 18
         self.gpioReed  = 17
         self.gpioButton = 4
 
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.gpioReed, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(self.gpioButton, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(self.gpioRelay, GPIO.OUT)
+        GPIO.setup(self.gpioServoPWM, GPIO.OUT)
+
+        self.pwmServo = GPIO.PWM(self.gpioServoPWM, 50)
+        self.pwmServo.start(0)
+
+
+
     def checkReed(self):
         sampleVal = []
         for ii in range(0,15,1):
-            sampleVal.append(wiringpi.digitalRead(self.gpioReed))
+            sampleVal.append(GPIO.input(self.gpioReed))
             time.sleep(0.1)
         #return len(set(sampleVal)) <= 1
         if sampleVal == [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]:  # :)
@@ -54,19 +46,36 @@ class gpioWrapper:
 
 
     def checkOpenButton(self):
-        return wiringpi.digitalRead(self.gpioButton)
+        sampleVal = []
+        for ii in range(0, 15, 1):
+            sampleVal.append(GPIO.input(self.gpioButton))
+            time.sleep(0.01)
+        # return len(set(sampleVal)) <= 1
+        if sampleVal == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]:  # :)
+            return True
+        else:
+            return False
+
+
 
     def openLock(self):
-        wiringpi.digitalWrite(self.gpioRelay, 1)
-        for pulse in range(90, 200, 1):
-            wiringpi.pwmWrite(self.gpioServoPWM, pulse)
-            time.sleep(self.delay_period)
-        wiringpi.digitalWrite(self.gpioRelay, 0)
+        GPIO.output(self.gpioRelay, 1)
+
+        time.sleep(0.5)
+        self.pwmServo.ChangeDutyCycle(self.pwmLockCmd)
+        time.sleep(1.5)
+        self.pwmServo.ChangeDutyCycle(0)
+
+        GPIO.output(self.gpioRelay, 0)
+        #self.pwmServo.stop()
 
     def closeLock(self):
-        wiringpi.digitalWrite(self.gpioRelay, 1)
-        for pulse in range(200, 90, -1):
-            wiringpi.pwmWrite(self.gpioServoPWM, pulse)
-            time.sleep(self.delay_period)
-        wiringpi.digitalWrite(self.gpioRelay, 0)
+        GPIO.output(self.gpioRelay, 1)
 
+        time.sleep(0.5)
+        self.pwmServo.ChangeDutyCycle(self.pwmUnlockCmd)
+        time.sleep(1.5)
+        self.pwmServo.ChangeDutyCycle(0)
+
+        GPIO.output(self.gpioRelay, 0)
+        #self.pwmServo.stop()

@@ -1,4 +1,5 @@
 from MasterCntrlWrapper import MasterCntrlWrapper
+from gpioWrapper import GPIO
 import time
 import datetime
 MstrCntrl = MasterCntrlWrapper()
@@ -7,25 +8,11 @@ AllowedTimes = [16, 21]
 
 
 def main():
-
+    GPIO.add_event_detect(MstrCntrl.gpioCntrl.gpioButton, GPIO.FALLING, callback=buttonISR, bouncetime=2000)
     print('Starting')
-    time.sleep(10)
-
-    while True:
-
-        print('Open Lock')
-        MstrCntrl.gpioCntrl.openLock()
-
-        time.sleep(5)
-        print('Close Lock')
-        MstrCntrl.gpioCntrl.closeLock()
-        time.sleep(5)
 
 
-
-
-
-    while False: #scheduleCheck():
+    while True: #scheduleCheck():
         if (MstrCntrl.MasterSTATE == 'IDLE'):
             idleState()
         if (MstrCntrl.MasterSTATE == 'VERIFY'):
@@ -52,7 +39,8 @@ def idleState():
     if (MstrCntrl.gpioCntrl.checkOpenButton()):
         MstrCntrl.MasterSTATE = 'UNLOCK'
 
-    if (MstrCntrl.gmailCntrl.checkExist('UnlockMaster')):
+    if (round(time.time())%10 == 0):
+        if (MstrCntrl.gmailCntrl.checkExist('UnlockMaster') ):
         Cond_2 = MstrCntrl.gmailCntrl.checkFrom()
         Cond_3 = MstrCntrl.gmailCntrl.checkTime()
         if (Cond_2 and Cond_3):
@@ -65,7 +53,7 @@ def verifyState():
     print(len(MstrCntrl.selectedDevice))
     print(MstrCntrl.selectedDevice)
 
-    if len(MstrCntrl.selectedDevice) >= 2:
+    if len(MstrCntrl.selectedDevice) >= 1:
         MstrCntrl.MasterSTATE = 'UNLOCK'
     else:
         MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Unlock Code?')
@@ -108,12 +96,25 @@ def unlockState():
     print('------UNLOCK-------')
     MstrCntrl.gpioCntrl.openLock()
     MstrCntrl.updateLog()
-    print(MstrCntrl.selectedDevice)
-    print(MstrCntrl.selectedDevice[0][2])
-    MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Unlocked')
+    if (not  MstrCntrl.buttonISR):
+        if (MstrCntrl.masterUnlock):
+            print("Unlocked from master code")
+            MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2],
+                                         'Unlocked by: Master Code')
+        else:
+            try:
+                print(MstrCntrl.selectedDevice)
+                print(MstrCntrl.selectedDevice[0][2])
+                MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Unlocked by: '+ MstrCntrl.selectedDevice[0][0])
+            except:
+                MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2],
+                                             'Error finding who unlocked')
     print('waiting')
+    startTime = time.time()
     while MstrCntrl.gpioCntrl.checkReed() == MstrCntrl.gpioCntrl.closeDoor:
-        pass
+        if ((time.time() - startTime) > 60):
+            break
+        time.sleep(0.2)
         #wait
 
     MstrCntrl.MasterSTATE = 'LOCK'
@@ -124,15 +125,19 @@ def lockState():
     while MstrCntrl.gpioCntrl.checkReed() == MstrCntrl.gpioCntrl.openDoor:
         pass
         # wait
-    time.sleep(1)
+    #time.sleep(0.5)
     MstrCntrl.gpioCntrl.closeLock()
     MstrCntrl.updateLog()
-    MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Locked')
+    if (not MstrCntrl.buttonISR):
+        MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Locked')
 
     MstrCntrl.selectedDevice = None
+    MstrCntrl.buttonISR = False
     #verify lock with pot
-    time.sleep(120)
     MstrCntrl.MasterSTATE = 'IDLE'
+    time.sleep(10)
+    print('Back to idle')
+
 
 
 def scheduleCheck():
@@ -145,8 +150,19 @@ def scheduleCheck():
         else:
             return False
 
-
+def buttonISR(channel):
+    print("ISR!!")
+    time.sleep(0.01)
+    if (MstrCntrl.gpioCntrl.checkOpenButton()):
+        print("Real!")
+        MstrCntrl.buttonISR = True
+        MstrCntrl.gpioCntrl.openLock()
+        MstrCntrl.MasterSTATE = 'UNLOCK'
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        GPIO.cleanup()  # clean up GPIO on CTRL+C exit
+        GPIO.cleanup()  # clean up GPIO on normal exit

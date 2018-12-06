@@ -9,5 +9,8 @@
     <orderEntry type="module" module-name="SMSTest" />
     <orderEntry type="module" module-name="GPIOTest" />
     <orderEntry type="module" module-name="BTTest" />
+    <orderEntry type="module" module-name="resetTest" />
+    <orderEntry type="module" module-name="httpServerTest" />
+    <orderEntry type="module" module-name="bokehSever" />
   </component>
 </module>
