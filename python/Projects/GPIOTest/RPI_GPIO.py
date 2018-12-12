@@ -3,8 +3,8 @@ import time
 
 gpioRelay = 3
 gpioServoPWM = 18
-gpioReed = 17
-gpioButton = 4
+gpioReed = 4
+gpioButton = 17
 
 
 GPIO.setmode(GPIO.BCM)
@@ -19,13 +19,13 @@ pwmServo.start(2.5)
 
 def my_callback(channel):
     print "falling edge detected on 17"
-    GPIO.output(03, True)
+    GPIO.output(gpioRelay, True)
     print("changed to 2")
     time.sleep(.5)
     pwmServo.ChangeDutyCycle(9)
     time.sleep(1.5)
 
-    GPIO.output(03, False)
+    GPIO.output(gpioRelay, False)
 
 
 GPIO.add_event_detect(gpioButton, GPIO.RISING, callback=my_callback, bouncetime=1000)
@@ -35,14 +35,14 @@ try:
     while True:
 
 
-        GPIO.output(03, True)
+        #GPIO.output(03, True)
 
 
         pwmServo.ChangeDutyCycle(4)
 
 
 
-        time.sleep(5)
+        #time.sleep(5)
 
         pass
     print "Rising edge detected on port 24. Here endeth the third lesson."

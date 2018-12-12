@@ -1,6 +1,6 @@
 import bluetooth
 from bt_proximity import BluetoothRSSI
-
+import time
 
 
 class BTWrapper:
@@ -14,6 +14,7 @@ class BTWrapper:
     def checkAllow(self):
         self.foundDevice = []
         for device in self.allow:
+            time.sleep(0.2)
             deviceAddr = device[1]
             rssi_val = self.getRSSI(deviceAddr)
             if self.rssiThres[0] < rssi_val < self.rssiThres[1]:

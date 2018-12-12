@@ -8,9 +8,9 @@ AllowedTimes = [16, 21]
 
 
 def main():
-    GPIO.add_event_detect(MstrCntrl.gpioCntrl.gpioButton, GPIO.FALLING, callback=buttonISR, bouncetime=2000)
+    GPIO.add_event_detect(MstrCntrl.gpioCntrl.gpioButton, GPIO.FALLING, callback=buttonISR, bouncetime=6000)
+    GPIO.add_event_detect(MstrCntrl.gpioCntrl.gpioReed, GPIO.FALLING, callback=reedISR, bouncetime=6000)
     print('Starting')
-
 
     while True: #scheduleCheck():
         if (MstrCntrl.MasterSTATE == 'IDLE'):
@@ -25,68 +25,99 @@ def main():
 
 def idleState():
 
-    ### Escape from idle by finding BT device or button push
+    if (round(time.time()) != MstrCntrl.currTime):
+        MstrCntrl.currTime = round(time.time())
+
+        ########## BT Scan Control
+        if (MstrCntrl.currTime % 9 == 0):
+            # 2 min Timeout after an unlock
+            if (time.time() - MstrCntrl.timeLock > 120):
+                print('Looking for Device')
+                print('Delta Tscan = ' + str(round(time.time()) - MstrCntrl.prevTime))
+
+                MstrCntrl.BTCntrl.checkAllow()
+                print('Delta Tdone = ' + str(round(time.time()) - MstrCntrl.currTime))
+
+                MstrCntrl.prevTime = MstrCntrl.currTime
+                if len(MstrCntrl.BTCntrl.foundDevice) > 0:
+                    print('Found!')
+                    MstrCntrl.MasterSTATE = 'VERIFY'
+                    MstrCntrl.selectedDevice = MstrCntrl.BTCntrl.foundDevice
+                    MstrCntrl.BTCntrl.foundDevice = []
 
 
-    print('Looking for Device')
-    MstrCntrl.BTCntrl.checkAllow()  #TODO: Change timeout
-    if len(MstrCntrl.BTCntrl.foundDevice) > 0:
-        print('Found!')
-        MstrCntrl.MasterSTATE = 'VERIFY'
-        MstrCntrl.selectedDevice = MstrCntrl.BTCntrl.foundDevice
-        MstrCntrl.BTCntrl.foundDevice = []
+            ########## GMail check
+            MstrCntrl.loopCount += 1
+            if (MstrCntrl.loopCount >= 1):
+                print('Delta Tgmail = ' + str(MstrCntrl.currTime - MstrCntrl.prevTime2))
+                MstrCntrl.prevTime2 = MstrCntrl.currTime
+                Cond_2 = False
+                Cond_3 = False
 
-    if (MstrCntrl.gpioCntrl.checkOpenButton()):
-        MstrCntrl.MasterSTATE = 'UNLOCK'
+                if (MstrCntrl.gmailCntrl.checkExist('UnlockMaster') ):
+                    Cond_2 = MstrCntrl.gmailCntrl.checkFrom()
+                    Cond_3 = MstrCntrl.gmailCntrl.checkTime()
+                    if (Cond_2):
+                        MstrCntrl.masterUnlock = True
+                        MstrCntrl.MasterSTATE = 'UNLOCK'
 
-    if (round(time.time())%10 == 0):
-        if (MstrCntrl.gmailCntrl.checkExist('UnlockMaster') ):
-        Cond_2 = MstrCntrl.gmailCntrl.checkFrom()
-        Cond_3 = MstrCntrl.gmailCntrl.checkTime()
-        if (Cond_2 and Cond_3):
-            MstrCntrl.MasterSTATE = 'UNLOCK'
+                if (MstrCntrl.gmailCntrl.checkExist('RelayOff')):
+                    MstrCntrl.gpioCntrl.RelayOff()
+
+                if (MstrCntrl.gmailCntrl.checkExist('Lock')):
+                    MstrCntrl.gpioCntrl.closeLock()
+
+                if (MstrCntrl.gmailCntrl.checkExist('Status')):
+                    if (MstrCntrl.gpioCntrl.checkReed()):
+                        temp = 'Closed'
+                    else:
+                        temp = 'Opened'
+                    MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.AllowList[0][2], 'Current State:' + MstrCntrl.MasterSTATE +', Door is: ' + str(temp))
+
+                MstrCntrl.loopCount = 0
+
+
+        ########## LED Control
+        if (MstrCntrl.currTime % 2 == 0):
+            MstrCntrl.loopCountLED +=1
+            if ( MstrCntrl.loopCountLED == 1):
+                print('LED ON')
+                MstrCntrl.gpioCntrl.LEDOn()
+            else:
+                print('LED OFF')
+                MstrCntrl.gpioCntrl.LEDOff()
+                MstrCntrl.loopCountLED = 0
+
+        if (MstrCntrl.reedISR and (not MstrCntrl.gpioCntrl.openDoor) and (not MstrCntrl.buttonISR) and (MstrCntrl.MasterSTATE == 'IDLE')):
+            MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.AllowList[0][2], 'Break in!!!!!!!!!')
 
 
 
 def verifyState():
     print('------VERIFY-------')
-    print(len(MstrCntrl.selectedDevice))
     print(MstrCntrl.selectedDevice)
 
-    if len(MstrCntrl.selectedDevice) >= 1:
+    if len(MstrCntrl.selectedDevice) >= 2:
         MstrCntrl.MasterSTATE = 'UNLOCK'
     else:
+        ### Request unlocker code
         MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Unlock Code?')
-        print(MstrCntrl.selectedDevice)
-        print(MstrCntrl.MasterSTATE)
         Cond_1 = False
         Cond_2 = False
         Cond_3 = False
+
         for ii in range(0, 30):
             print('waiting for email')
             Cond_1 = MstrCntrl.gmailCntrl.checkExist('Unlock')
-            print(Cond_1)
             if (Cond_1):
-                print('Got Cond 1')
                 Cond_2 = MstrCntrl.gmailCntrl.checkFrom()
-                print(Cond_2)
                 Cond_3 = MstrCntrl.gmailCntrl.checkTime()
 
-                print(Cond_3)
             if (Cond_1 and Cond_2 and Cond_3):
                 print('Got it!')
-
-                Cond_1 = False
-                Cond_2 = False
-                Cond_3 = False
                 MstrCntrl.MasterSTATE = 'UNLOCK'
-
-
                 break
             else:
-                Cond_1 = False
-                Cond_2 = False
-                Cond_3 = False
                 MstrCntrl.MasterSTATE = 'IDLE'
 
             time.sleep(2)
@@ -94,48 +125,58 @@ def verifyState():
 
 def unlockState():
     print('------UNLOCK-------')
-    MstrCntrl.gpioCntrl.openLock()
-    MstrCntrl.updateLog()
-    if (not  MstrCntrl.buttonISR):
+
+    if (not MstrCntrl.buttonISR):
+        print('not ISR')
+        MstrCntrl.gpioCntrl.openLock()
+        MstrCntrl.doorStatus = MstrCntrl.gpioCntrl.checkReed()
+
         if (MstrCntrl.masterUnlock):
             print("Unlocked from master code")
-            MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2],
-                                         'Unlocked by: Master Code')
+            MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2],'Unlocked by: Master Code')
+            MstrCntrl.selectedDevice[0][2] = 'Master Code'
         else:
             try:
-                print(MstrCntrl.selectedDevice)
-                print(MstrCntrl.selectedDevice[0][2])
                 MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Unlocked by: '+ MstrCntrl.selectedDevice[0][0])
             except:
-                MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2],
-                                             'Error finding who unlocked')
-    print('waiting')
+                MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Error finding who unlocked')
+        print('waiting')
+
+    else:
+        print('unlock ISR')
+
+    #Capture door event
     startTime = time.time()
-    while MstrCntrl.gpioCntrl.checkReed() == MstrCntrl.gpioCntrl.closeDoor:
+    while (MstrCntrl.doorStatus == MstrCntrl.gpioCntrl.closeDoor):
+        MstrCntrl.doorStatus = MstrCntrl.gpioCntrl.checkReed()
         if ((time.time() - startTime) > 60):
+            print('Unlock timeout')
             break
         time.sleep(0.2)
-        #wait
 
+    MstrCntrl.reedISR = False
+    MstrCntrl.updateLog()
     MstrCntrl.MasterSTATE = 'LOCK'
+
 
 def lockState():
     print('------LOCK-------')
-    print('waiting')
-    while MstrCntrl.gpioCntrl.checkReed() == MstrCntrl.gpioCntrl.openDoor:
+
+    # Wait for action
+    while MstrCntrl.doorStatus == MstrCntrl.gpioCntrl.openDoor:
+        MstrCntrl.doorStatus = MstrCntrl.gpioCntrl.checkReed()
         pass
-        # wait
-    #time.sleep(0.5)
+
     MstrCntrl.gpioCntrl.closeLock()
     MstrCntrl.updateLog()
+
     if (not MstrCntrl.buttonISR):
         MstrCntrl.gmailCntrl.sendTxt(MstrCntrl.selectedDevice[0][2], 'Locked')
 
     MstrCntrl.selectedDevice = None
     MstrCntrl.buttonISR = False
-    #verify lock with pot
     MstrCntrl.MasterSTATE = 'IDLE'
-    time.sleep(10)
+    MstrCntrl.timeLock = time.time()
     print('Back to idle')
 
 
@@ -150,14 +191,25 @@ def scheduleCheck():
         else:
             return False
 
+
+###############  ISR Definitions ##############
 def buttonISR(channel):
-    print("ISR!!")
+    print("button ISR!!")
     time.sleep(0.01)
-    if (MstrCntrl.gpioCntrl.checkOpenButton()):
-        print("Real!")
+
+    if (MstrCntrl.gpioCntrl.checkOpenButton() and (not MstrCntrl.buttonISR)):
+        print("Real butten!")
         MstrCntrl.buttonISR = True
-        MstrCntrl.gpioCntrl.openLock()
         MstrCntrl.MasterSTATE = 'UNLOCK'
+        MstrCntrl.gpioCntrl.openLock()
+
+def reedISR(channel):
+    print("reed ISR!!")
+    time.sleep(0.01)
+    if ((not MstrCntrl.gpioCntrl.checkReed()) and (not MstrCntrl.reedISR)):
+        print("Real reed!")
+        MstrCntrl.reedISR = True
+        MstrCntrl.doorStatus = MstrCntrl.gpioCntrl.openDoor
 
 
 if __name__ == '__main__':
@@ -165,4 +217,6 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         GPIO.cleanup()  # clean up GPIO on CTRL+C exit
-        GPIO.cleanup()  # clean up GPIO on normal exit
+        print('Cleaned')
+    GPIO.cleanup()  # clean up GPIO on normal exit
+    print('Cleaned')

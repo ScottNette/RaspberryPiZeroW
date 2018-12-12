@@ -43,6 +43,18 @@ class GmailWrapper:
             raise Exception('Error Logging In')
             return False
 
+    def logout(self):
+        print('Logging in as ' + self.userName)
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        # imaplib module implements connection based on IMAPv4 protocol
+        try:
+            mail.close()
+            mail.logout()
+
+            return True
+        except:
+            raise Exception('Error Logging out')
+            return False
 
 
 
@@ -131,7 +143,7 @@ class GmailWrapper:
         else:
             try:
                 self.raw_email = raw_email
-                print('got an rmail')
+                print('got an email')
                 return True
             except:
                 return False
