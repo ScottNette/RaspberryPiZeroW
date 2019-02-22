@@ -33,6 +33,9 @@ class gpioWrapper:
         self.pwmServo = GPIO.PWM(self.gpioServoPWM, 50)
         self.pwmServo.start(0)
 
+    def relayGPIOSetup(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.gpioRelay, GPIO.OUT)
 
 
     def checkReed(self):
@@ -52,11 +55,10 @@ class gpioWrapper:
         for ii in range(0, 15, 1):
             sampleVal.append(GPIO.input(self.gpioButton))
             time.sleep(0.01)
-        if sum(sampleVal) > 13:  # :)
+        if sum(sampleVal) > 13:
             return True
         else:
             return False
-
 
 
     def openLock(self):
@@ -75,6 +77,7 @@ class gpioWrapper:
         time.sleep(3)
         self.ServoOff()
         self.RelayOff()
+
 
     def ServoOff(self):
         self.pwmServo.ChangeDutyCycle(0)

@@ -2,6 +2,7 @@ from GmailWrapper import GmailWrapper
 from BTWrapper import BTWrapper
 from gpioWrapper import gpioWrapper
 from sheetsWrapper import sheetsWrapper
+from allowList import *
 
 
 class MasterCntrlWrapper:
@@ -9,9 +10,15 @@ class MasterCntrlWrapper:
 
     def __init__(self):
         ## Init Bluetooth
-        self.AllowList = [('Pixel2', '40:4E:36:47:A5:35', '2038038060@vtext.com'),
-                          ('Altima', 'E0:AE:5E:FD:49:26', '2038038060@vtext.com'),
-                          ('Kristen', '4C:74:BF:B0:1E:B4', '+16233268643@tmomail.net')]
+        self.AllowList = externalAllow
+        # [['Pretty Name', 'MAC ADDRESS', 'email', 'BT device name'],
+        #   ...,
+        #   ...]]
+        self.AllowListAlt = externalAllowAlt
+
+        #self.CheckList = self.AllowList[0:1]
+        self.initCheckList()
+        print(self.CheckList)
         self.RSSIThreshold = (-30, 10)
 
         self.BTCntrl = BTWrapper(self.AllowList, self.RSSIThreshold)
@@ -35,6 +42,8 @@ class MasterCntrlWrapper:
         self.buttonISR = False
         self.reedISR = False
 
+        self.unlockFreeze = False
+
         self.masterUnlock = False
         self.loopCount = 0
         self.loopCountLED = 0
@@ -42,9 +51,17 @@ class MasterCntrlWrapper:
         self.prevTime = 0
         self.prevTime2 = 0
         self.doorStatus = True
+        self.emailUnlock = False
 
-    def Test(self):
-        print('test')
+        self.scheduleSkip = 0
+        self.dayDisable = 0
+        self.wakeUp = 0
+        self.alert = False
+        self.timeNow = 0
+
+    def initCheckList(self):
+        self.CheckList = self.AllowList[1:3]
+        #self.CheckList = self.AllowList[::2]
 
     def updateLog(self):
         print('Logging')
@@ -53,18 +70,18 @@ class MasterCntrlWrapper:
             if (self.buttonISR):
                 self.logCntrl.updateLog(self.MasterSTATE, "Manual")
             else:
-                self.logCntrl.updateLog(self.MasterSTATE, self.selectedDevice[0][0])
+                self.logCntrl.updateLog(self.MasterSTATE, self.selectedDevice[0])
         except:
             print('login error')
             self.logCntrl.login()
             if (self.buttonISR):
                 self.logCntrl.updateLog(self.MasterSTATE, "Manual")
             else:
-                self.logCntrl.updateLog(self.MasterSTATE, self.selectedDevice[0][0])
+                self.logCntrl.updateLog(self.MasterSTATE, self.selectedDevice[0])
 
 
 
 
     def gmailLogin(self):
-        self.gmailCntrl = GmailWrapper('imap.gmail.com', 'sdroid.scott', 'ComP353uter~!', self.AllowList)
+        self.gmailCntrl = GmailWrapper('imap.gmail.com', self.AllowList)
 

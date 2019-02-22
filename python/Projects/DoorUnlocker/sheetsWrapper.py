@@ -28,7 +28,7 @@ class sheetsWrapper:
     #    timeNow = str(datetime.datetime.now(Arizona))
         timeNow = str(datetime.datetime.time(datetime.datetime.now(Arizona)).replace(microsecond=0))
         cell_values = [dateNow, timeNow, State, Device]
-        print(cell_values)
+        #print(cell_values)
 
         for i, val in enumerate(cell_values):  # gives us a tuple of an index and value
             cell_list[i].value = val  # use the index on cell_list and the val from cell_values
